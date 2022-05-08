@@ -1,0 +1,78 @@
+networks:
+  pitocms-network:
+    driver: bridge
+    name: pitocms-network
+services:
+  pitocms-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pitocms-api
+    depends_on:
+      - pitocms-db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 600M
+    environment:
+      OPCACHE_VALIDATE_TIMESTAMPS: 1
+    image: pitocms/pitocms-api
+    networks:
+      - pitocms-network
+    ports:
+      - 8001:80
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+  pitocms-db:
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: pitocms-db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 300M
+    environment:
+      MYSQL_DATABASE: pitocms-db
+      MYSQL_ROOT_PASSWORD: 12345678
+    image: mysql:5.7
+    networks:
+      - pitocms-network
+    restart: unless-stopped
+    volumes:
+      - pitocms-db:/var/lib/mysql
+  pitocms-mh:
+    container_name: pitocms-mh
+    image: mailhog/mailhog:latest
+    networks:
+      - pitocms-network
+    ports:
+      - 8003:8025
+    restart: unless-stopped
+  pitocms-pma:
+    container_name: pitocms-pma
+    depends_on:
+      - pitocms-db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 100M
+    environment:
+      PMA_HOST: pitocms-db
+      PMA_PASSWORD: 12345678
+      PMA_USER: root
+      UPLOAD_LIMIT: 2M
+    image: phpmyadmin/phpmyadmin:latest
+    networks:
+      - pitocms-network
+    ports:
+      - 8002:80
+    restart: unless-stopped
+version: '3.7'
+volumes:
+  pitocms-db:
+    driver: local
+    name: pitocms-db
