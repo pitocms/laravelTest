@@ -20,7 +20,7 @@ class PostStoreController extends Controller
         // $website = Website::firstOrCreate(['website' => $request->validated('website')]);
         $post = Post::create($request->validated());
         PostStoredEvent::dispatch($post);
-        return responst()->json([
+        return response()->json([
             'data' => [
                 'post' => $post,
             ],

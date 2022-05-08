@@ -18,7 +18,7 @@ class SubscriptionStoreController extends Controller
     {
         // $website = Website::firstOrCreate(['website' => $request->validated('website')]);
         $subscription = Subscription::create($request->validated());
-        return responst()->json([
+        return response()->json([
             'data' => [
                 'subscription' => $subscription,
             ],
